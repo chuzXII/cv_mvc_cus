@@ -1,17 +1,37 @@
 <?php
-include_once __DIR__ . '/../../config/database.php';
+// include_once __DIR__ . '/../../config/database.php';
 
+namespace App\Controllers;
 
-class HomeController
+use Core\Controller;
+use Core\View;
+use Core\Database;
+use PDOException;
+use PDO;
+
+class HomeController extends Controller
 {
     private $conn;
 
     public function __construct()
     {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conn = new Database();
     }
     public function index()
+    {
+        View::render('home.AboutView', ['title' => 'Home Page']);
+    }
+    public function iresume()
+    {
+        View::render('home.ResumeView', ['title' => 'Home Page']);
+    }
+    public function iportfolio()
+    {
+        $stmt = $this->conn->query('SELECT * FROM project');
+        $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        View::render('home.PortfolioView', ['title' => 'Home Page','datas'=>$datas]);
+    }
+    public function indsex()
     {
         $title = 'About';
         ob_start();
@@ -19,7 +39,7 @@ class HomeController
         $content = ob_get_clean();
         include_once __DIR__ . '/../../views/layout/layout.php';
     }
-    public function iresume()
+    public function iresusme()
     {
         $title = 'Resume';
         ob_start();
@@ -27,12 +47,12 @@ class HomeController
         $content = ob_get_clean();
         include __DIR__ . '/../../views/layout/layout.php';
     }
-    public function iportfolio()
+    public function iportfolsio()
     {
         $title = 'Portfolio';
         // Query untuk mengambil data pengguna
         $stmt = $this->conn->query('SELECT * FROM project');
-        $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         ob_start();
         include '../views/home/PortfolioView.php';
         $content = ob_get_clean();

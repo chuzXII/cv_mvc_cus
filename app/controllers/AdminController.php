@@ -1,52 +1,42 @@
 <?php
-
+namespace App\Controllers;
 // include_once __DIR__ . '/../../config/database.php';
 // namespace App\Controllers;
-use  App\Core\Controller;
-use  App\Core\View;
-use  App\Core\Database; // Import namespace Database
-// use PDOException;
-// use PDO;
+use Core\Controller;
+use Core\View;
+use Core\Database; // Import namespace Database
+use PDOException;
+use PDO;
 
-class AdminController extends Controller
-{
+class AdminController {
     private $conn;
     public function __construct() {
-        $this->view = new View(__DIR__ . '/../../views/admin');
+        // $this->view = new View(__DIR__ . '/../../views/admin');
         $this->conn = new Database();
     }
     public function index()
     {
-        $title = 'Dashboard';
-        $content = $this->view->render('dashboard', ['title' => $title]);
-        $this->renderLayout($content);
-        
+        View::render('admin.dashboard', ['title' => 'Dashboard']);    
     }
     public function idproject()
     {
         $title = 'Data Project';
         $stmt = $this->conn->query('SELECT * FROM project');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $content = $this->view->render('dataportfolio', ['title' => $title, 'users' => $users]);
-        $this->renderLayout($content);
+        View::render('admin.dataportfolio', ['title' => 'Dashboard','users'=>$users]);   
+
         
 
     }
     public function showProjectForm($id = null)
     {
-        $title = 'Form Project';
-        // Jika $id tidak null, ini untuk edit proyek yang ada
         if ($id !== null) {
             $projectData = $this->getProjectById($id);
         } else {
             $projectData = ['nama_project' => '', 'deksripsi_project' => '', 'kategori_project' => '', 'link_project' => '', 'nama_file' => '']; // Inisialisasi untuk tambah proyek baru
         }
-        ob_start();
-        // Tampilkan formulir
-        include_once __DIR__ . '/../../views/admin/formportfolio.php';
-        $content = ob_get_clean();
-        // Masukkan ke dalam layout
-        include_once __DIR__ . '/../../views/layout/admin/layout.php';
+       
+        View::render('admin.formportfolio', ['title' => 'Form Project','projectData'=>$projectData]);
     }
     public function editportfolio($id)
     {
@@ -113,14 +103,15 @@ class AdminController extends Controller
                     'text' => 'Error Validasi',
                     'icon' => 'error'
                 ];
-                header('Location: /editportfolio/' . $projectId);
+                header('Location: ' . BASE_URL . '/../editportfolio/' . $projectId);
             } else {
                 $_SESSION['sweet'] = [
                     'title' => 'Gagal!',
                     'text' => 'Error Validasi',
                     'icon' => 'error'
                 ];
-                header('Location: /addportfolio');
+      
+                header('Location: ' . BASE_URL . '/../addportfolio');
             }
             exit();
         }
@@ -172,7 +163,7 @@ class AdminController extends Controller
         }
 
         // Redirect ke halaman dashboard atau halaman lain yang sesuai
-        header('Location: /dataportfolio');
+        header('Location: ' . BASE_URL . '/../dataportfolio');
         exit();
     }
 
@@ -248,7 +239,7 @@ class AdminController extends Controller
                 'text' => 'Proyek Berhasil Dihapus.',
                 'icon' => 'success'
             ];
-            header('Location: /dataportfolio');
+            header('Location: ' . BASE_URL . '/../dataportfolio');
             exit();
         } catch (PDOException $e) {
             echo "Error: " . $e->getMessage();
@@ -257,7 +248,7 @@ class AdminController extends Controller
                 'text' => 'Terjadi Kesalahan Saat Menghapus Proyek.',
                 'icon' => 'error'
             ];
-            header('Location: /dataportfolio');
+            header('Location: ' . BASE_URL . '/../dataportfolio');
             exit();
         }
     }
@@ -291,12 +282,7 @@ class AdminController extends Controller
         // Query untuk mengambil data pengguna
         $stmt = $this->conn->query('SELECT * FROM user');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Panggil tampilan datauser.php dengan menyertakan data pengguna
-        ob_start();
-        include_once __DIR__ . '/../../views/admin/datauser.php';
-        $content = ob_get_clean();
-        include_once __DIR__ . '/../../views/layout/admin/layout.php';
+        View::render('admin.datauser', ['title' => 'Data User','users'=>$users]);
     }
     public function showUserForm($id = null)
     {
@@ -402,97 +388,7 @@ class AdminController extends Controller
         $content = ob_get_clean();
         include_once __DIR__ . '/../../views/layout/admin/layout.php';
     }
-    public function ilogin()
-    {
-        $title = 'Login App';
-        // ob_start();
-        // include 'views/login.php';
-        // $content = ob_get_clean();
-        include_once __DIR__ . '/../../views/login.php';
-    }
-    public function iregis()
-    {
-        $title = 'Registrasi App';
-        // ob_start();
-        // include 'views/registrasi.php';
-        // $content = ob_get_clean();
-        include_once __DIR__ . '/../../views/registrasi.php';
-    }
-
-    public function auth()
-    {
-        // Validasi input
-        $username = htmlspecialchars(trim($_POST['username']));
-        $password = htmlspecialchars(trim($_POST['password']));
-
-        // Ambil user dari database (misalnya, menggunakan PDO)
-        $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
-        $stmt = $pdo->prepare('SELECT * FROM user WHERE username = ?');
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Verifikasi password
-        if ($user && password_verify($password, $user['password'])) {
-            // Setel variabel sesi
-            $_SESSION['user'] = $user['username'];
-            $_SESSION['iduser'] = $user['id_user'];
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-            // $_SESSION['last_activity'] = time();
-            // $_SESSION['session_token'] = AuthMiddleware::generateSessionToken();
-            $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-            $host = $_SERVER['HTTP_HOST'];
-
-            // Redirect ke dashboard atau halaman lain
-            $this->redirect('/dashboard');
-
-            // $this->redirect('dashboard');
-
-        } else {
-            // Jika login gagal, kembalikan ke halaman login dengan pesan error
-            $_SESSION['error'] = 'Username atau password salah.';
-            header('Location: /login');
-            exit();
-        }
-    }
-
-    public function logout()
-    {
-        // Hapus semua data sesi
-        session_unset();
-        session_destroy();
-
-        // Redirect ke halaman utama atau halaman login
-        header('Location: /');
-        exit();
-    }
-    public function register()
-    {
-        $username = htmlspecialchars(trim($_POST['username']));
-        $email = htmlspecialchars(trim($_POST['email']));
-        $password = htmlspecialchars(trim($_POST['password']));
-        $confirmPassword = htmlspecialchars(trim($_POST['cpassword']));
-
-        if ($password !== $confirmPassword) {
-            $_SESSION['error'] = 'Password dan konfirmasi password tidak cocok.';
-            header('Location: /regis');
-            exit();
-        }
-
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-        $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
-        $stmt = $pdo->prepare('INSERT INTO user (username, email, password) VALUES (?,?,?)');
-        if ($stmt->execute([$username, $email, $hashedPassword])) {
-            // $_SESSION['user'] = $username;
-            // $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-            header('Location: /login');
-            exit();
-        } else {
-            $_SESSION['error'] = 'Gagal mendaftarkan pengguna baru.';
-            header('Location: /regis');
-            exit();
-        }
-    }
+    
 
     private function getUserById($id)
     {
@@ -512,12 +408,7 @@ class AdminController extends Controller
 
         $stmt = $this->conn->query('SELECT * FROM sertifikat');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Panggil tampilan datauser.php dengan menyertakan data pengguna
-        ob_start();
-        include_once __DIR__ . '/../../views/admin/datasertifikat.php';
-        $content = ob_get_clean();
-        include_once __DIR__ . '/../../views/layout/admin/layout.php';
+        View::render('admin.datasertifikat', ['title' => 'Data Sertifikat','users'=>$users]);
     }
 
 
@@ -544,7 +435,7 @@ class AdminController extends Controller
         exit;
     }
     private function renderLayout($content) {
-        $layout = $this->view->render('../layout/admin/layout', ['content' => $content]);
-        echo $layout;
+        // $layout = $this->view->render('../layout/admin/layout', ['content' => $content]);
+        // echo $layout;
     }
 }
