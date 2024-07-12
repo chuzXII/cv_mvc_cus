@@ -1,0 +1,67 @@
+#!/usr/bin/php
+<?php
+
+// Lakukan parsing argumen dari command line
+$arguments = $argv;
+array_shift($arguments); // Hilangkan argumen pertama (nama skrip)
+
+// Warna ANSI Escape Sequences
+define('COLOR_RESET', "\033[0m");
+define('COLOR_RED', "\033[31m");
+define('COLOR_GREEN', "\033[32m");
+define('COLOR_YELLOW', "\033[33m");
+
+// Fungsi untuk mencetak dengan warna
+function printColored($message, $color) {
+    echo $color . $message . COLOR_RESET . "\n";
+}
+
+// Jika tidak ada argumen, tampilkan panduan penggunaan
+if (empty($arguments)) {
+    echo "Usage: php nixie [command]\n";
+    echo "Available commands:\n";
+    echo "  make:controller [ControllerName]\tCreate a new controller\n";
+    // Tambahkan perintah-perintah lainnya di sini
+    exit(1);
+}
+
+// Ambil perintah dari argumen pertama
+$command = array_shift($arguments);
+
+// Logika untuk setiap perintah
+switch ($command) {
+    case 'make:controller':
+        $controllerName = array_shift($arguments);
+        if (empty($controllerName)) {
+            printColored("Please specify controller name.", COLOR_YELLOW);
+            exit(1);
+        }
+        createController($controllerName);
+        break;
+    // Tambahkan case untuk perintah-perintah lainnya di sini
+    default:
+        printColored("Command '{$command}' not recognized.", COLOR_RED);
+        exit(1);
+}
+
+// Fungsi untuk membuat controller baru
+function createController($controllerName)
+{
+    $controllerFile = __DIR__ . '/app/controllers/' . $controllerName .'.php';
+
+    // Cek apakah file sudah ada
+    if (file_exists($controllerFile)) {
+        printColored("Controller {$controllerName}.php already exists.", COLOR_YELLOW);
+        return;
+    }
+
+    // Konten template untuk controller
+    $template = "<?php\n\nnamespace App\Controllers;\n\nuse Core\Controller;\n\nclass {$controllerName} extends Controller\n{\n    public function index()\n    {\n        \$this->view('home.AboutView', ['title' => 'Home Page']);\n    }\n}\n";
+
+    // Buat file controller baru
+    if (file_put_contents($controllerFile, $template)) {
+        printColored("Controller {$controllerName}.php created successfully.", COLOR_GREEN);
+    } else {
+        printColored("Failed to create controller {$controllerName}.php.", COLOR_RED);
+    }
+}

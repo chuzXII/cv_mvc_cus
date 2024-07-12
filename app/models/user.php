@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Core\Model;
+use PDO;
 
 class User extends Model
 {
-    public function getUsers()
-    {
-        $stmt = $this->db->query("SELECT * FROM users");
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
+    protected $table = 'user';
+    protected $primaryKey = 'id_user';
+
 }

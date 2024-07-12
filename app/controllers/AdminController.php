@@ -3,12 +3,12 @@ namespace App\Controllers;
 // include_once __DIR__ . '/../../config/database.php';
 // namespace App\Controllers;
 use Core\Controller;
-use Core\View;
+// use Core\View;
 use Core\Database; // Import namespace Database
 use PDOException;
 use PDO;
 
-class AdminController {
+class AdminController extends Controller{
     private $conn;
     public function __construct() {
         // $this->view = new View(__DIR__ . '/../../views/admin');
@@ -16,14 +16,16 @@ class AdminController {
     }
     public function index()
     {
-        View::render('admin.dashboard', ['title' => 'Dashboard']);    
+        $this->view('admin.dashboard', ['title' => 'Dashboard']);    
     }
     public function idproject()
     {
         $title = 'Data Project';
         $stmt = $this->conn->query('SELECT * FROM project');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        View::render('admin.dataportfolio', ['title' => 'Dashboard','users'=>$users]);   
+        $this->view('admin.dataportfolio', ['title' => 'Data Project','users'=>$users]);    
+
+        // View::render('admin.dataportfolio', ['title' => 'Dashboard','users'=>$users]);   
 
         
 
@@ -36,7 +38,7 @@ class AdminController {
             $projectData = ['nama_project' => '', 'deksripsi_project' => '', 'kategori_project' => '', 'link_project' => '', 'nama_file' => '']; // Inisialisasi untuk tambah proyek baru
         }
        
-        View::render('admin.formportfolio', ['title' => 'Form Project','projectData'=>$projectData]);
+        $this->view('admin.formportfolio', ['title' => 'Form Project','projectData'=>$projectData]);
     }
     public function editportfolio($id)
     {
@@ -103,7 +105,7 @@ class AdminController {
                     'text' => 'Error Validasi',
                     'icon' => 'error'
                 ];
-                header('Location: ' . BASE_URL . '/../editportfolio/' . $projectId);
+                header('Location: ' . BASE_URL . '/editportfolio/' . $projectId);
             } else {
                 $_SESSION['sweet'] = [
                     'title' => 'Gagal!',
@@ -163,7 +165,7 @@ class AdminController {
         }
 
         // Redirect ke halaman dashboard atau halaman lain yang sesuai
-        header('Location: ' . BASE_URL . '/../dataportfolio');
+        header('Location: ' . BASE_URL . '/dataportfolio');
         exit();
     }
 
@@ -282,7 +284,7 @@ class AdminController {
         // Query untuk mengambil data pengguna
         $stmt = $this->conn->query('SELECT * FROM user');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        View::render('admin.datauser', ['title' => 'Data User','users'=>$users]);
+        $this->view('admin.datauser', ['title' => 'Data User','users'=>$users]);
     }
     public function showUserForm($id = null)
     {
@@ -293,12 +295,7 @@ class AdminController {
             $userData = ['name' => '', 'email' => '']; // Inisialisasi untuk tambah pengguna baru
         }
 
-        // Tampilkan formulir
-        ob_start();
-        include_once __DIR__ . '/../../views/admin/formuser.php';
-        $content = ob_get_clean();
-        // Masukkan ke dalam layout
-        include_once __DIR__ . '/../../views/layout/admin/layout.php';
+        $this->view('admin.formuser', ['title' => 'Data User','userData'=>$userData]);
     }
     public function saveUser()
     {
@@ -408,7 +405,7 @@ class AdminController {
 
         $stmt = $this->conn->query('SELECT * FROM sertifikat');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        View::render('admin.datasertifikat', ['title' => 'Data Sertifikat','users'=>$users]);
+        $this->view('admin.datasertifikat', ['title' => 'Data Sertifikat','users'=>$users]);
     }
 
 

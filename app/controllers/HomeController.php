@@ -4,7 +4,7 @@
 namespace App\Controllers;
 
 use Core\Controller;
-use Core\View;
+// use Core\View;
 use Core\Database;
 use PDOException;
 use PDO;
@@ -19,17 +19,17 @@ class HomeController extends Controller
     }
     public function index()
     {
-        View::render('home.AboutView', ['title' => 'Home Page']);
+       $this->view('home.AboutView', ['title' => 'Home Page']);
     }
     public function iresume()
     {
-        View::render('home.ResumeView', ['title' => 'Home Page']);
+        $this->view('home.ResumeView', ['title' => 'Home Page']);
     }
     public function iportfolio()
     {
         $stmt = $this->conn->query('SELECT * FROM project');
         $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        View::render('home.PortfolioView', ['title' => 'Home Page','datas'=>$datas]);
+        $this->view('home.PortfolioView', ['title' => 'Home Page','datas'=>$datas]);
     }
     public function indsex()
     {

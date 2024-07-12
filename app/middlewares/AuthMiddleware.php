@@ -1,17 +1,17 @@
 <?php
-
+namespace App\Middlewares;
 class AuthMiddleware {
     public static function handle() {
         // Periksa apakah sesi pengguna ada
         if (!isset($_SESSION['user'])) {
-            header('Location: /');
+            header('Location: '.BASE_URL);
             exit();
         }
 
         // Tambahkan verifikasi tambahan, misalnya token CSRF
         if (!self::verifyCsrfToken()) {
             // Jika verifikasi gagal, arahkan pengguna ke halaman utama
-            header('Location: /');
+            header('Location: '.BASE_URL);
             exit();
         }
 

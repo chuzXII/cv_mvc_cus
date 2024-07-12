@@ -1,7 +1,7 @@
 <?php
 
 namespace Core;
-
+use Core\View;
 class Controller
 {
     public function model($model)
@@ -12,6 +12,7 @@ class Controller
 
     public function view($view, $data = [])
     {
-        require_once '../app/Views/' . $view . '.php';
+        View::render($view, $data);
     }
+    
 }

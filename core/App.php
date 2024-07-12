@@ -10,6 +10,7 @@ class App
 
     public function __construct()
     {
+
         $url = $this->parseUrl();
 
         if (isset($url[0]) && file_exists('../app/Controllers/' . ucfirst($url[0]) . 'Controller.php')) {

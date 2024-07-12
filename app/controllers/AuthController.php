@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Core\Controller;
 use Core\View;
 use Core\Database;
+use App\Models\user;
 use PDOException;
 use PDO;
 
@@ -22,7 +23,8 @@ class AuthController extends Controller
     }
     public function iregis()
     {
-        View::render('registrasi', ['title' => 'Registrasi Page']);
+        $this->view('registrasi', ['title' => 'Registrasi Page']);
+        // View::render('registrasi', ['title' => 'Registrasi Page']);
        
     }
 
@@ -33,13 +35,16 @@ class AuthController extends Controller
         $password = htmlspecialchars(trim($_POST['password']));
 
         // Ambil user dari database (misalnya, menggunakan PDO)
-        $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
-        $stmt = $pdo->prepare('SELECT * FROM user WHERE username = ?');
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        // $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
+        // $stmt = $pdo->prepare('SELECT * FROM user WHERE username = ?');
+        // $stmt->execute([$username]);
+        // $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userModel = new User();
+        $user = $userModel->where('username',$username)->first();
+  
         // Verifikasi password
         if ($user && password_verify($password, $user['password'])) {
+            
             // Setel variabel sesi
             $_SESSION['user'] = $user['username'];
             $_SESSION['iduser'] = $user['id_user'];
@@ -47,17 +52,19 @@ class AuthController extends Controller
             // $_SESSION['last_activity'] = time();
             // $_SESSION['session_token'] = AuthMiddleware::generateSessionToken();
             $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-            $host = $_SERVER['HTTP_HOST'];
+            // $host = $_SERVER['HTTP_HOST'];
 
             // Redirect ke dashboard atau halaman lain
             // $this->redirect('/dashboard');
 
             // $this->redirect('dashboard');
+            header('Location: '.BASE_URL.'/dashboard');
+            exit;
 
         } else {
             // Jika login gagal, kembalikan ke halaman login dengan pesan error
             $_SESSION['error'] = 'Username atau password salah.';
-            header('Location: /login');
+            header('Location: '.BASE_URL.'/login');
             exit();
         }
     }
@@ -81,7 +88,8 @@ class AuthController extends Controller
 
         if ($password !== $confirmPassword) {
             $_SESSION['error'] = 'Password dan konfirmasi password tidak cocok.';
-            header('Location: /regis');
+            header('Location: '.BASE_URL.'/regis');
+
             exit();
         }
 
@@ -92,7 +100,8 @@ class AuthController extends Controller
         if ($stmt->execute([$username, $email, $hashedPassword])) {
             // $_SESSION['user'] = $username;
             // $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-            header('Location: /login');
+            header('Location: '.BASE_URL.'/login');
+
             exit();
         } else {
             $_SESSION['error'] = 'Gagal mendaftarkan pengguna baru.';

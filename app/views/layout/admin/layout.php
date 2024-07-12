@@ -46,7 +46,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css
                             <span class="hide-menu">Home</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/../dashboard" aria-expanded="false">
+                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/dashboard" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-layout-dashboard"></i>
                                 </span>
@@ -54,7 +54,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/../dataportfolio" aria-expanded="false">
+                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/dataportfolio" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-briefcase"></i>
                                 </span>
@@ -62,7 +62,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/../datasertifikat" aria-expanded="false">
+                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/datasertifikat" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-certificate"></i>
                                 </span>
@@ -70,7 +70,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/../datauser" aria-expanded="false">
+                            <a class="sidebar-link" href="<?php echo BASE_URL; ?>/datauser" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-user"></i>
                                 </span>
