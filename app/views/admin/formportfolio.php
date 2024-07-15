@@ -29,6 +29,8 @@
     </div>
     <div class="card-body p-4">
         <form action="<?php echo BASE_URL; ?>/../exe/saveproject" method="POST" enctype="multipart/form-data">
+        <?php echo \Core\View::csrfField(); ?>
+
             <?php if (isset($projectData['id_project'])) : ?>
                 <input type="hidden" name="id_project" value='<?php echo $projectData['id_project']; ?>'>
             <?php endif; ?>

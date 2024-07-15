@@ -2,7 +2,9 @@
 
 namespace Core;
 
+use InvalidArgumentException;
 use PDO;
+use PDOException;
 
 class Model
 {
@@ -29,19 +31,32 @@ class Model
 
     public function create(array $data)
     {
-        $keys = array_keys($data);
-        $columns = implode(', ', $keys);
-        $placeholders = ':' . implode(', :', $keys);
+        if (!empty($data) && is_array($data) && count(array_filter(array_keys($data), 'is_string')) === count($data)) {
+            // Mendapatkan daftar kolom
+            $columns = implode(', ', array_keys($data));
 
-        $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
-        $stmt = $this->pdo->prepare($sql);
+            // Membuat placeholder untuk nilai
+            $placeholders = ':' . implode(', :', array_keys($data));
 
-        foreach ($data as $key => $value) {
-            $stmt->bindValue(":$key", $value);
+            // Membuat query SQL INSERT
+            $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+
+            // Menyiapkan statement SQL dengan PDO
+            $stmt = $this->pdo->prepare($sql);
+
+            // Mengikat nilai ke placeholder dalam statement SQL
+            foreach ($data as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+
+            // Mengeksekusi statement SQL dan mengembalikan hasilnya
+            return $stmt->execute();
+        } else {
+            throw new \InvalidArgumentException('Input harus berupa array asosiatif yang tidak kosong.');
         }
-
-        return $stmt->execute();
     }
+
+
 
     public function update($id, array $data)
     {
@@ -71,14 +86,23 @@ class Model
 
     public function where($field, $value, $operator = '=')
     {
-        $sql = "SELECT * FROM {$this->table} WHERE $field $operator :value";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':value', $value);
-        $stmt->execute();
+        // var_dump($value);
+        // die();
+        try {
+            $sql = "SELECT * FROM {$this->table} WHERE $field $operator :value";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':value', $value);
+            $stmt->execute();
 
-        $this->results = $stmt->fetchAll(PDO::FETCH_ASSOC); // Store the results in $this->results
-        return $this;
+            $this->results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $this;
+        } catch (PDOException $e) {
+            // Handle your PDO exception, log or throw as necessary
+            echo "Error executing query: " . $e->getMessage();
+            return null; // Or handle the error in an appropriate manner
+        }
     }
+
 
     public function first()
     {
@@ -93,5 +117,30 @@ class Model
     public function setPrimaryKey($key)
     {
         $this->primaryKey = $key;
+    }
+    public function getColumnValueById($id, array $column, $field = null, $oprator = '=')
+    {
+        if (empty($columns)) {
+            throw new InvalidArgumentException('Daftar kolom tidak boleh kosong.');
+        }
+        $field = $field ?? $this->primaryKey;
+        // Membuat daftar kolom untuk SELECT
+        $columnsList = implode(', ', $columns);
+
+        // Membuat query SQL dengan placeholder untuk nilai id
+        $sql = "SELECT $columnsList FROM {$this->table} WHERE $field = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':id', $id);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        foreach ($columns as $column) {
+            if (isset($result[$column])) {
+                return $result[$column];
+            }
+        }
+
+        return null;
     }
 }

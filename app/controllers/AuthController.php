@@ -6,45 +6,60 @@ use Core\Controller;
 use Core\View;
 use Core\Database;
 use App\Models\user;
+use Core\Request;
 use PDOException;
 use PDO;
 
 class AuthController extends Controller
 {
-    private $conn;
-
-    public function __construct()
-    {
-        $this->conn = new Database();
-    }
     public function Ilogin()
     {
-        View::render('login', ['title' => 'Login Page']);
+        $this->view('login', ['title' => 'Login Page']);
     }
     public function iregis()
     {
         $this->view('registrasi', ['title' => 'Registrasi Page']);
         // View::render('registrasi', ['title' => 'Registrasi Page']);
-       
+
     }
 
-    public function auth()
+    public function auth(Request $req)
     {
         // Validasi input
-        $username = htmlspecialchars(trim($_POST['username']));
-        $password = htmlspecialchars(trim($_POST['password']));
+        $username = htmlspecialchars($req->input('username'));
 
+        $password = htmlspecialchars($req->input('password'));
+        $messages = [
+            'password.required' => 'Password is required.',
+        ];
+        $validated = $req->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ], $messages);
+
+        // Periksa apakah validasi gagal
+        if (!$validated->passes()) {
+            // Ambil daftar error
+            $errors = $validated->errors();
+
+            // Tampilkan pesan error atau lakukan penanganan lainnya
+            // var_dump($errors);
+
+            // header('Location: '.BASE_URL.'/login');
+            $this->redirect('/login');
+
+            return;
+        }
         // Ambil user dari database (misalnya, menggunakan PDO)
         // $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
         // $stmt = $pdo->prepare('SELECT * FROM user WHERE username = ?');
         // $stmt->execute([$username]);
         // $user = $stmt->fetch(PDO::FETCH_ASSOC);
         $userModel = new User();
-        $user = $userModel->where('username',$username)->first();
-  
+        $user = $userModel->where('username', $username)->first();
+
         // Verifikasi password
         if ($user && password_verify($password, $user['password'])) {
-            
             // Setel variabel sesi
             $_SESSION['user'] = $user['username'];
             $_SESSION['iduser'] = $user['id_user'];
@@ -58,13 +73,16 @@ class AuthController extends Controller
             // $this->redirect('/dashboard');
 
             // $this->redirect('dashboard');
-            header('Location: '.BASE_URL.'/dashboard');
-            exit;
+            // header('Location: '.BASE_URL.'/dashboard');
+            $this->redirect('/dashboard');
 
+            exit;
         } else {
             // Jika login gagal, kembalikan ke halaman login dengan pesan error
             $_SESSION['error'] = 'Username atau password salah.';
-            header('Location: '.BASE_URL.'/login');
+            $this->redirect('/login');
+
+            // header('Location: '.BASE_URL.'/login');
             exit();
         }
     }
@@ -76,59 +94,55 @@ class AuthController extends Controller
         session_destroy();
 
         // Redirect ke halaman utama atau halaman login
-        header('Location: /');
+        $this->redirect('/');
+
         exit();
     }
-    public function register()
+    public function register(Request $req)
     {
-        $username = htmlspecialchars(trim($_POST['username']));
-        $email = htmlspecialchars(trim($_POST['email']));
-        $password = htmlspecialchars(trim($_POST['password']));
-        $confirmPassword = htmlspecialchars(trim($_POST['cpassword']));
+        $username = htmlspecialchars(trim($req->input('username')));
+        $email = htmlspecialchars(trim($req->input('email')));
+        $password = htmlspecialchars(trim($req->input('password')));
+        // $confirmPassword = htmlspecialchars(trim($req->input('password_confirmation')));
+        $validated = $req->validate([
+            'username'=>'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed',
+        ]);
 
-        if ($password !== $confirmPassword) {
-            $_SESSION['error'] = 'Password dan konfirmasi password tidak cocok.';
-            header('Location: '.BASE_URL.'/regis');
+        if (!$validated->passes()) {
+            $errors = $validated->errors();
 
-            exit();
+            $this->redirect('/regis');
+            return;
         }
+        // if ($password !== $confirmPassword) {
+        //     $_SESSION['error'] = 'Password dan konfirmasi password tidak cocok.';
+        //     header('Location: '.BASE_URL.'/regis');
+
+        //     exit();
+        // }
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
-        $stmt = $pdo->prepare('INSERT INTO user (username, email, password) VALUES (?,?,?)');
-        if ($stmt->execute([$username, $email, $hashedPassword])) {
+        // $pdo = new PDO('mysql:host=localhost;dbname=cv2', 'root', '');
+        // $stmt = $pdo->prepare('INSERT INTO user (username, email, password) VALUES (?,?,?)');
+        $data = ['username' => $username, 'email' => $email, 'password' => $hashedPassword];
+        $userModel = new User();
+        $reguser = $userModel->create($data);
+        if ($reguser) {
             // $_SESSION['user'] = $username;
             // $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-            header('Location: '.BASE_URL.'/login');
+            $this->redirect('/login');
+
+            // header('Location: '.BASE_URL.'/login');
 
             exit();
         } else {
             $_SESSION['error'] = 'Gagal mendaftarkan pengguna baru.';
-            header('Location: /regis');
+            $this->redirect('/regis');
+            // header('Location: '.BASE_URL.'/regis');
             exit();
         }
-    }
-    public function redirect($route)
-    {
-        // Tentukan protokol berdasarkan kondisi HTTPS
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-
-        // Dapatkan hostname dan port dari permintaan
-        $full_host = $_SERVER['HTTP_HOST'];
-
-        // Pisahkan hostname dan port jika ada
-        $url_parts = explode(':', $full_host);
-        $hostname = $url_parts[0];
-        $port = isset($url_parts[1]) ? ':' . $url_parts[1] : '';
-
-        if (isset($url_parts[1])) {
-            $redirect_url = "$protocol$full_host$route";
-        } else {
-            $redirect_url = "$protocol$hostname/cvv$route";
-        }
-
-        header("Location: $redirect_url");
-        exit;
     }
 }

@@ -1,5 +1,10 @@
-Options -Multiviews
 RewriteEngine On
+RewriteBase /cv_mvc_cus/public/
+ # Sesuaikan dengan direktori proyek Anda
+
+# Redirect semua permintaan bukan untuk file atau direktori yang ada
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [L]
+
+# Tujukan permintaan ke index.php dengan parameter PATH_INFO
+RewriteRule ^ index.php [QSA,L]

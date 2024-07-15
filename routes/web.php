@@ -14,22 +14,22 @@ Router::group(['auth'], function() {
     Router::get('/dashboard', 'AdminController@index');
     Router::get('/dataportfolio', 'AdminController@idproject');
     Router::get('/addportfolio', 'AdminController@showProjectForm');
-    Router::get('/exe/saveproject', 'AdminController@saveProject');
+    Router::post('/exe/saveproject', 'AdminController@saveProject');
     Router::get('/editportfolio/{id}', 'AdminController@showProjectForm');
-    Router::get('/exe/deleteproject/(\d+)', 'AdminController@deleteProject');
+    Router::post('/exe/deleteproject/(\d+)', 'AdminController@deleteProject');
     Router::get('/detailportfolio/(\d+)', 'AdminController@detailportfolio');
     Router::get('/datauser', 'AdminController@iduser');
     Router::get('/adduser', 'AdminController@showUserForm');
-    Router::get('/exe/saveuser', 'AdminController@saveUser');
+    Router::post('/exe/saveuser', 'AdminController@saveUser');
     Router::get('/edituser/(\d+)', 'AdminController@showUserForm');
-    Router::get('/exe/deleteuser/(\d+)', 'AdminController@deleteUser');
+    Router::post('/exe/deleteuser/(\d+)', 'AdminController@deleteUser');
     Router::get('/datasertifikat', 'AdminController@idSertifikat');
 });
 
 Router::get('/login', 'AuthController@ilogin');
-Router::get('/auth/login', 'AuthController@auth');
+Router::post('/auth/login', 'AuthController@auth');
 Router::get('/regis', 'AuthController@iregis');
-Router::get('/auth/register', 'AuthController@register');
+Router::post('/auth/register', 'AuthController@register');
 Router::get('/logout', 'AuthController@logout');
 
 Router::dispatch();

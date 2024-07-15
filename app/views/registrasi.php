@@ -29,6 +29,8 @@
                                 }
                                 ?>
                                 <form action="auth/register" method="POST">
+                                <?php echo \Core\View::csrfField(); ?>
+
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="username" name="username" aria-describedby="textHelp">
@@ -42,8 +44,8 @@
                                         <input type="password" class="form-control" id="password" name="password">
                                     </div>
                                     <div class="mb-4">
-                                        <label for="cpassword" class="form-label">confirm Password</label>
-                                        <input type="password" class="form-control" id="cpassword" name="cpassword">
+                                        <label for="password_confirmation" class="form-label">confirm Password</label>
+                                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                                     </div>
                                     <input type="hidden" name="csrf_token" value='<?php echo $_SESSION['csrf_token']; ?>'>
                                     <button class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">

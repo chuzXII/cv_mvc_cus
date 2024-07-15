@@ -12,15 +12,10 @@ class View
     public static function render($view, $data = [])
     {
         extract($data);
-
-        // Start output buffering
         ob_start();
         require self::getViewPath($view);
         
-
         self::$contentBuffer = ob_get_clean();
-
-        // Render the content within the layout if extends is used
         if (self::$layout !== null) {
             ob_start();
             require self::getViewPath(self::$layout);
@@ -31,6 +26,11 @@ class View
             exit;
         }
     }
+    public static function csrfField()
+    {
+        return '<input type="hidden" name="csrf_token" value="' . $_SESSION['csrf_token'] . '">';
+    }
+   
 
     public static function startSection($section)
     {

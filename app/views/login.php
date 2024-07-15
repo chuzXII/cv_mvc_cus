@@ -28,16 +28,17 @@
                                     unset($_SESSION['error']);
                                 }
                                 ?>
-                                <form action="auth/login" method="POST">
+                                <form action=" /auth/login" method="POST">
+                                    <?php echo \Core\View::csrfField(); ?>
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
-                                        <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp" required autofocus>
+                                        <input type="text" class="form-control" id="username" name="username" required autofocus>
                                     </div>
                                     <div class="mb-4">
                                         <label for="password" class="form-label">Password</label>
                                         <input type="password" class="form-control" id="password" name="password" required>
                                     </div>
-                                    <input type="hidden" name="csrf_token" value='<?php echo $_SESSION['csrf_token'];?>'>
+                             
                                     <!-- <div class="d-flex align-items-center justify-content-between mb-4">
                                         <div class="form-check">
                                             <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>
@@ -48,7 +49,7 @@
                                         <a class="text-primary fw-bold" href="./index.html">Forgot Password ?</a>
                                     </div> -->
                                     <button class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">
-                                    Sign In
+                                        Sign In
                                     </button>
                                     <!-- <a href="./index.html" ></a> -->
                                     <div class="d-flex align-items-center justify-content-center">

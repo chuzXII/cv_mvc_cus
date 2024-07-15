@@ -1,44 +1,55 @@
 <?php
+
 namespace App\Controllers;
 // include_once __DIR__ . '/../../config/database.php';
 // namespace App\Controllers;
+
+use App\Models\Project;
 use Core\Controller;
 // use Core\View;
 use Core\Database; // Import namespace Database
+use Core\Request;
 use PDOException;
 use PDO;
 
-class AdminController extends Controller{
-    private $conn;
-    public function __construct() {
-        // $this->view = new View(__DIR__ . '/../../views/admin');
-        $this->conn = new Database();
+class AdminController extends Controller
+{
+    private $MProject;
+    private $MUser;
+
+    public function __construct()
+    {
+        $this->MProject = new Project();
     }
     public function index()
     {
-        $this->view('admin.dashboard', ['title' => 'Dashboard']);    
+        $this->view('admin.dashboard', ['title' => 'Dashboard']);
     }
     public function idproject()
     {
         $title = 'Data Project';
-        $stmt = $this->conn->query('SELECT * FROM project');
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->view('admin.dataportfolio', ['title' => 'Data Project','users'=>$users]);    
+        $users = $this->MProject->all();
+        $this->view('admin.dataportfolio', ['title' => 'Data Project', 'users' => $users]);
 
         // View::render('admin.dataportfolio', ['title' => 'Dashboard','users'=>$users]);   
 
-        
+
 
     }
-    public function showProjectForm($id = null)
+    public function showProjectForm( $id = null)
     {
+        // var_dump($id);
+        // die();
         if ($id !== null) {
-            $projectData = $this->getProjectById($id);
+            // $projectData = $this->MProject->find($id);
+           
+            $this->MProject->where('id_project',$id)->first();
+            
         } else {
             $projectData = ['nama_project' => '', 'deksripsi_project' => '', 'kategori_project' => '', 'link_project' => '', 'nama_file' => '']; // Inisialisasi untuk tambah proyek baru
         }
-       
-        $this->view('admin.formportfolio', ['title' => 'Form Project','projectData'=>$projectData]);
+
+        $this->view('admin.formportfolio', ['title' => 'Form Project', 'projectData' => $projectData]);
     }
     public function editportfolio($id)
     {
@@ -112,7 +123,7 @@ class AdminController extends Controller{
                     'text' => 'Error Validasi',
                     'icon' => 'error'
                 ];
-      
+
                 header('Location: ' . BASE_URL . '/../addportfolio');
             }
             exit();
@@ -130,11 +141,8 @@ class AdminController extends Controller{
 
         if ($projectId) {
             if (empty($screenshot)) {
-                $query = "SELECT nama_file FROM project WHERE id_project = :id";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bindParam(':id', $projectId);
-                $stmt->execute();
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                $result = $this->MProject->getColumnValueById($projectId, ['nama_file'], 'id_project');
+
                 $name_file = $result['nama_file'];
                 // $extension = pathinfo($screenshot['name'], PATHINFO_EXTENSION);
                 // $name_file =  "img-" . $projectName . "." . $extension;
@@ -170,64 +178,38 @@ class AdminController extends Controller{
     }
 
 
-    private function getProjectById($id)
-    {
-        // Mengambil data proyek berdasarkan $id dari database
-        $query = "SELECT * FROM project WHERE id_project = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
 
     private function updateProject($id, $projectName, $description, $category, $projectLink, $screenshot)
     {
-
-        // Update data proyek ke dalam database
-        $query = "UPDATE project SET nama_project = :project_name, deksripsi_project = :descriptions, kategori_project = :category, link_project = :project_link, nama_file = :screenshot,id_user = :iduser WHERE id_project  = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':project_name', $projectName);
-        $stmt->bindParam(':descriptions', $description);
-        $stmt->bindParam(':category', $category);
-        $stmt->bindParam(':project_link', $projectLink);
-        $stmt->bindParam(':screenshot', $screenshot);
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':iduser', $_SESSION['iduser']);
-        $stmt->execute();
+        $data = [
+            'nama_project' => $projectName,
+            'deksripsi_project' => $description,
+            'kategori_project' => $category,
+            'link_project' => $projectLink,
+            'nama_file' => $screenshot,
+            'id_user' => $_SESSION['iduser']
+        ];
+        $this->MProject->update($id, $data);
     }
 
     private function addProject($projectName, $description, $category, $projectLink, $screenshot)
     {
-        // Menambahkan data proyek baru ke dalam database
-        $query = "INSERT INTO project (nama_project, deksripsi_project, kategori_project, link_project, nama_file,id_user) VALUES (:project_name, :descriptions, :category, :project_link, :screenshot, :iduser)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':project_name', $projectName);
-        $stmt->bindParam(':descriptions', $description);
-        $stmt->bindParam(':category', $category);
-        $stmt->bindParam(':project_link', $projectLink);
-        $stmt->bindParam(':screenshot', $screenshot);
-        $stmt->bindParam(':iduser', $_SESSION['iduser']);
-        $stmt->execute();
+        $data = [
+            'nama_project' => $projectName,
+            'deksripsi_project' => $description,
+            'kategori_project' => $category,
+            'link_project' => $projectLink,
+            'nama_file' => $screenshot,
+            'id_user' => $_SESSION['iduser']
+        ];
+        $this->MProject->create($data);
     }
     public function deleteProject($projectId)
     {
-        $query = "SELECT nama_file FROM project WHERE id_project = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $projectId);
-
-
         try {
-
-            $stmt->execute();
-
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $this->MProject->getColumnValueById($projectId,['nama_file']);
             $screenshot = $result['nama_file'];
-
-            $query = "DELETE FROM project WHERE id_project = :id";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $projectId);
-            $stmt->execute();
-
+            $this->MProject->delete($projectId);
             if (!empty($screenshot)) {
                 $uploadPath = __DIR__ . '/../../uploads/';
                 $filePath = $uploadPath . $screenshot;
@@ -256,13 +238,8 @@ class AdminController extends Controller{
     }
     public function detailportfolio($projectId)
     {
-        $query = "SELECT * FROM project WHERE id_project = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $projectId);
-
         try {
-            $stmt->execute();
-            $project = $stmt->fetch(PDO::FETCH_ASSOC);
+            $project= $this->MProject->find($projectId);
 
             if ($project) {
                 $title = 'Data Portfolio';
@@ -280,11 +257,8 @@ class AdminController extends Controller{
     }
     public function iduser()
     {
-        $title = 'Data User';
-        // Query untuk mengambil data pengguna
-        $stmt = $this->conn->query('SELECT * FROM user');
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->view('admin.datauser', ['title' => 'Data User','users'=>$users]);
+        $users = $this->MUser->all();
+        $this->view('admin.datauser', ['title' => 'Data User', 'users' => $users]);
     }
     public function showUserForm($id = null)
     {
@@ -295,7 +269,7 @@ class AdminController extends Controller{
             $userData = ['name' => '', 'email' => '']; // Inisialisasi untuk tambah pengguna baru
         }
 
-        $this->view('admin.formuser', ['title' => 'Data User','userData'=>$userData]);
+        $this->view('admin.formuser', ['title' => 'Data User', 'userData' => $userData]);
     }
     public function saveUser()
     {
@@ -332,35 +306,27 @@ class AdminController extends Controller{
 
     private function updateUser($id, $name, $email, $pass)
     {
-        // Update data pengguna ke dalam database
-        $query = "UPDATE user SET username = :username, email = :email,password = :password WHERE id_user = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':username', $name);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':password', $pass);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
+        $data =[
+            'username'=>$name,
+            'email'=>$email,
+            'password'=>$pass,
+        ];
+        $this->MUser->update($id,$data);
     }
 
     private function addUser($name, $email, $pass)
     {
-        // Menambahkan data pengguna baru ke dalam database
-        $query = "INSERT INTO user (username, email,password) VALUES (:name, :email,:password)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':password', $pass);
-        $stmt->execute();
+        $data =[
+            'username'=>$name,
+            'email'=>$email,
+            'password'=>$pass,
+        ];
+        $this->MUser->create($data);
     }
     public function deleteuser($userId)
     {
-        $query = "DELETE FROM user WHERE id_user = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $userId);
-
         try {
-            $stmt->execute();
-            // Redirect ke halaman dashboard atau halaman lain yang sesuai setelah berhasil dihapus
+            $this->MUser->delete($userId);
             $_SESSION['sweet'] = [
                 'title' => 'Berhasil!',
                 'text' => 'User Berhasil Dihapus.',
@@ -385,7 +351,7 @@ class AdminController extends Controller{
         $content = ob_get_clean();
         include_once __DIR__ . '/../../views/layout/admin/layout.php';
     }
-    
+
 
     private function getUserById($id)
     {
@@ -401,11 +367,11 @@ class AdminController extends Controller{
 
     public function idSertifikat()
     {
-        $title = 'Data Sertifikat';
+        // $title = 'Data Sertifikat';
 
-        $stmt = $this->conn->query('SELECT * FROM sertifikat');
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->view('admin.datasertifikat', ['title' => 'Data Sertifikat','users'=>$users]);
+        // $stmt = $this->conn->query('SELECT * FROM sertifikat');
+        // $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // $this->view('admin.datasertifikat', ['title' => 'Data Sertifikat', 'users' => $users]);
     }
 
 
@@ -431,7 +397,8 @@ class AdminController extends Controller{
         header("Location: $redirect_url");
         exit;
     }
-    private function renderLayout($content) {
+    private function renderLayout($content)
+    {
         // $layout = $this->view->render('../layout/admin/layout', ['content' => $content]);
         // echo $layout;
     }
