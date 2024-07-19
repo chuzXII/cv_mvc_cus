@@ -19,10 +19,18 @@ class Request
         $default = null;
         return $this->data[$key] ?? $default;
     }
+    public function file($key = null)
+    {
+        if ($key === null) {
+            return $_FILES;
+        }
+        return $_FILES[$key] ?? null;
+    }
+
 
     public function all()
     {
-        return $this->data;
+        return array_merge($this->data, $_FILES);
     }
 
     public function validate($rules, $messages = [])

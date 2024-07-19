@@ -45,28 +45,40 @@ class Validator
             $this->addError($field, 'required');
         }
 
-        if (strpos($rule, 'unique:') === 0) {
-            $params = explode(':', $rule);
-            $table = $params[1];
-            $value = $this->data[$field];
+        if ($rule === 'file' && isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
+            $this->addError($field, 'file');
+        }
 
-            // Implementasi validasi unique harus disesuaikan dengan struktur database Anda
-            // Misalnya, cek keberadaan data di dalam database
-            // Contoh sederhana:
-            if ($table === 'posts' && $value === 'existing_value') {
-                $this->addError($field, 'unique');
+        if (strpos($rule, 'mimes:') === 0 && isset($_FILES[$field])) {
+     
+            if (!empty($_FILES[$field]['tmp_name'])) {
+                $mime = mime_content_type($_FILES[$field]['tmp_name']);
+                $allowedTypes = explode(',', str_replace('mimes:', '', $rule));
+                $fileType = mime_content_type($_FILES[$field]['tmp_name']);
+
+                if (!in_array($fileType, $allowedTypes)) {
+                    $this->addError($field, 'mimes');
+                }
+            } else {
+                // $this->addError($field, 'file');
+            }
+        }
+
+        if (strpos($rule, 'max:') === 0 && isset($_FILES[$field])) {
+            $maxSize = (int) str_replace('max:', '', $rule) * 1024;
+            $fileSize = $_FILES[$field]['size'];
+
+            if ($fileSize > $maxSize) {
+                $this->addError($field, 'max');
             }
         }
 
         if ($rule === 'confirmed') {
             $confirmationField = $field . '_confirmation';
-            if (!isset($this->data[$confirmationField]) || $this->data[$field] !== $this->data[$confirmationField]) {
+            if ($this->data[$field] !== $this->data[$confirmationField]) {
                 $this->addError($field, 'confirmed');
             }
         }
-
-        // Implementasi aturan validasi lainnya seperti 'max:255', 'email', dll.
-        // Anda bisa menambahkan fungsi validasi sesuai kebutuhan.
     }
 
     protected function addError($field, $rule)
@@ -83,6 +95,11 @@ class Validator
             'email' => "The $field must be a valid email address.",
             'max' => "The $field may not be greater than :max characters.",
             'confirmed' => "The $field confirmation does not match.",
+            'file' => "The $field field is not file or not found",
+            'mimes' => "The $field field must be a JPEG or PNG image.",
+
+
+
         ];
 
         return $messages[$rule] ?? "The $field field has an error.";

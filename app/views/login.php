@@ -22,23 +22,34 @@
                                     <img src="../assets/images/logos/dark-logo.svg" width="180" alt="">
                                 </a>
                                 <p class="text-center">Your Social Campaigns</p>
-                                <?php
-                                if (isset($_SESSION['error'])) {
-                                    echo '<p style="color:red;">' . $_SESSION['error'] . '</p>';
-                                    unset($_SESSION['error']);
-                                }
-                                ?>
-                                <form action=" /auth/login" method="POST">
-                                    <?php echo \Core\View::csrfField(); ?>
+                                <form action=" auth/login" method="POST">
+                                    <?php echo \Core\View::csrfField();
+                                    if (isset($_SESSION['error'])) {
+                                        echo '<p style="color:red;">' . $_SESSION['error'] . '</p>';
+                                        unset($_SESSION['error']);
+                                    }
+                                    $errors = $_SESSION['errors'] ?? [];
+                                    unset($_SESSION['errors']);
+                                    ?>
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="username" name="username" required autofocus>
                                     </div>
+                                    <?php if (!empty($errors['username'])) : ?>
+                                        <?php foreach ($errors['username'] as $error) : ?>
+                                            <div class="error" style="color:red;"><?php echo $error; ?></div>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                     <div class="mb-4">
                                         <label for="password" class="form-label">Password</label>
                                         <input type="password" class="form-control" id="password" name="password" required>
+                                        <?php if (!empty($errors['password'])) : ?>
+                                            <?php foreach ($errors['password'] as $error) : ?>
+                                                <div class="error" style="color:red;"><?php echo $error; ?></div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </div>
-                             
+
                                     <!-- <div class="d-flex align-items-center justify-content-between mb-4">
                                         <div class="form-check">
                                             <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>

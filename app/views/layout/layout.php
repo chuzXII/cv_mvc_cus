@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,7 +26,7 @@
             <div class="col-md-3 sidebar" id="profil">
                 <div data-aos="fade-up">
                     <div class="text-center mb-3">
-                        <div class="bg-white rounded-circle mx-auto imgprof"  ><img src="assets/img/clients/profile.jpeg" class="img-fluid rounded-circle" alt=""></div>
+                        <div class="bg-white rounded-circle mx-auto imgprof"><img src="assets/img/clients/profile.jpeg" class="img-fluid rounded-circle" alt=""></div>
                     </div>
                     <h5 class="text-center">Ilham Nur Isnaini Baskara Jaya</h5>
                     <div class="text-center mb-3 ">
@@ -91,27 +90,38 @@
                     </div>
                 </div>
             </div>
-       
+            <?php
+            function isActive($path)
+            {
+                $current_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                $current_path = str_replace(dirname($current_path), "", $current_path);
+                return $current_path == $path ? 'active' : '';
+            }
+            ?>
             <div class="col-md-9">
                 <div class="main-content">
                     <div class="d-flex justify-content-end navv">
+                        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
                         <ul class="nav">
                             <li class="nav-item">
-                                <a class="nav-link" href="/">About</a>
+                                <a class="nav-link <?php echo isActive('/') ?>" href="/">About</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link " href="resume">Resume</a>
+                                <a class="nav-link <?php echo isActive('/resume') ?>" href="resume">Resume</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link   " href="portfolio">Portfolio</a>
+                                <a class="nav-link  <?php echo isActive('/portfolio') ?> " href="portfolio">Portfolio</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link " href="contact">Contact</a>
+                                <a class="nav-link  <?php echo isActive('/portfolio') ?>" href="portfolio">Certificate</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link <?php echo isActive('/contact') ?>" href="contact">Contact</a>
                             </li>
                         </ul>
                     </div>
                     <div class="sub-content">
-                    <?php echo \Core\View::yield('content'); ?>
+                        <?php echo \Core\View::yield('content'); ?>
 
                     </div>
                 </div>
@@ -172,6 +182,10 @@
         });
     </script>
     <script type="text/javascript">
+        function toggleMenu() {
+            const nav = document.querySelector('.nav');
+            nav.classList.toggle('active');
+        }
         const lightbox = GLightbox({
             selector: '.glightbox'
         });

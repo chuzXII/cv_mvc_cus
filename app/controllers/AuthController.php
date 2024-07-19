@@ -38,16 +38,11 @@ class AuthController extends Controller
         ], $messages);
 
         // Periksa apakah validasi gagal
+        
         if (!$validated->passes()) {
-            // Ambil daftar error
             $errors = $validated->errors();
-
-            // Tampilkan pesan error atau lakukan penanganan lainnya
-            // var_dump($errors);
-
-            // header('Location: '.BASE_URL.'/login');
+            $this->withErrors($errors);
             $this->redirect('/login');
-
             return;
         }
         // Ambil user dari database (misalnya, menggunakan PDO)

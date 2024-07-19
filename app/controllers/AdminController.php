@@ -5,21 +5,26 @@ namespace App\Controllers;
 // namespace App\Controllers;
 
 use App\Models\Project;
+use App\Models\Sertifikat;
 use Core\Controller;
 // use Core\View;
-use Core\Database; // Import namespace Database
+use Core\Database;
 use Core\Request;
+use Core\Response;
 use PDOException;
 use PDO;
 
 class AdminController extends Controller
 {
     private $MProject;
+    private $MSertifikat;
     private $MUser;
+
 
     public function __construct()
     {
         $this->MProject = new Project();
+        $this->MSertifikat = new Sertifikat();
     }
     public function index()
     {
@@ -36,15 +41,14 @@ class AdminController extends Controller
 
 
     }
-    public function showProjectForm( $id = null)
+    public function showProjectForm($id = null)
     {
         // var_dump($id);
         // die();
         if ($id !== null) {
-            // $projectData = $this->MProject->find($id);
-           
-            $this->MProject->where('id_project',$id)->first();
-            
+            $projectData = $this->MProject->find($id);
+
+            // $this->MProject->where('id_project', $id)->first();
         } else {
             $projectData = ['nama_project' => '', 'deksripsi_project' => '', 'kategori_project' => '', 'link_project' => '', 'nama_file' => '']; // Inisialisasi untuk tambah proyek baru
         }
@@ -176,9 +180,6 @@ class AdminController extends Controller
         header('Location: ' . BASE_URL . '/dataportfolio');
         exit();
     }
-
-
-
     private function updateProject($id, $projectName, $description, $category, $projectLink, $screenshot)
     {
         $data = [
@@ -207,7 +208,7 @@ class AdminController extends Controller
     public function deleteProject($projectId)
     {
         try {
-            $result = $this->MProject->getColumnValueById($projectId,['nama_file']);
+            $result = $this->MProject->getColumnValueById($projectId, ['nama_file']);
             $screenshot = $result['nama_file'];
             $this->MProject->delete($projectId);
             if (!empty($screenshot)) {
@@ -239,7 +240,7 @@ class AdminController extends Controller
     public function detailportfolio($projectId)
     {
         try {
-            $project= $this->MProject->find($projectId);
+            $project = $this->MProject->find($projectId);
 
             if ($project) {
                 $title = 'Data Portfolio';
@@ -306,20 +307,20 @@ class AdminController extends Controller
 
     private function updateUser($id, $name, $email, $pass)
     {
-        $data =[
-            'username'=>$name,
-            'email'=>$email,
-            'password'=>$pass,
+        $data = [
+            'username' => $name,
+            'email' => $email,
+            'password' => $pass,
         ];
-        $this->MUser->update($id,$data);
+        $this->MUser->update($id, $data);
     }
 
     private function addUser($name, $email, $pass)
     {
-        $data =[
-            'username'=>$name,
-            'email'=>$email,
-            'password'=>$pass,
+        $data = [
+            'username' => $name,
+            'email' => $email,
+            'password' => $pass,
         ];
         $this->MUser->create($data);
     }
@@ -367,39 +368,162 @@ class AdminController extends Controller
 
     public function idSertifikat()
     {
-        // $title = 'Data Sertifikat';
-
-        // $stmt = $this->conn->query('SELECT * FROM sertifikat');
-        // $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // $this->view('admin.datasertifikat', ['title' => 'Data Sertifikat', 'users' => $users]);
+        $dsertifikat = $this->MSertifikat->all();
+        $this->view('admin.datasertifikat', ['title' => 'Data Sertifikat', 'dsertifikat' => $dsertifikat]);
     }
-
-
-    public function redirect($route)
+    public function showSertifikatForm($id = null)
     {
-        // Tentukan protokol berdasarkan kondisi HTTPS
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+        if ($id !== null) {
+            $sertifikatData = $this->MSertifikat->find($id);
+            // $this->MProject->where('id_project',$id)->first();
 
-        // Dapatkan hostname dan port dari permintaan
-        $full_host = $_SERVER['HTTP_HOST'];
-
-        // Pisahkan hostname dan port jika ada
-        $url_parts = explode(':', $full_host);
-        $hostname = $url_parts[0];
-        $port = isset($url_parts[1]) ? ':' . $url_parts[1] : '';
-
-        if (isset($url_parts[1])) {
-            $redirect_url = "$protocol$full_host$route";
         } else {
-            $redirect_url = "$protocol$hostname/cvv$route";
+            $sertifikatData = ['nama_project' => '', 'deksripsi_project' => '', 'kategori_project' => '', 'link_project' => '', 'nama_file' => '']; // Inisialisasi untuk tambah proyek baru
         }
 
-        header("Location: $redirect_url");
-        exit;
+        $this->view('admin.formsertifikat', ['title' => 'Form Project', 'sertifikatData' => $sertifikatData]);
     }
-    private function renderLayout($content)
+    public function saveSertifikat(Request $req)
     {
-        // $layout = $this->view->render('../layout/admin/layout', ['content' => $content]);
-        // echo $layout;
+        $sertifikatName = htmlspecialchars($req->input('sertifikat_name'));
+        $screenshot = $req->file('screenshot');
+        $sertifikatId = $req->input('id_sertifikat');
+       
+            // Validate the uploaded file
+            $validated = $req->validate([
+                'sertifikat_name' => 'required',
+                'screenshot' => 'file|mimes:image/jpeg,image/png',
+            ]);
+            if (!$validated->passes()) {
+                $errors = $validated->errors();
+                $this->withErrors($errors);
+                if ($sertifikatId) {
+                    $_SESSION['sweet'] = [
+                        'title' => 'Gagal!',
+                        'text' => 'Error Validasi',
+                        'icon' => 'error'
+                    ];
+                    $this->redirect('/editportfolio/' . $sertifikatId);
+                } else {
+                    $_SESSION['sweet'] = [
+                        'title' => 'Gagal!',
+                        'text' => 'Error Validasi',
+                        'icon' => 'error'
+                    ];
+                    $this->redirect('/addportfolio/');
+                }
+                return;
+            }
+        
+
+        $uploadDir = __DIR__ . '/../../uploads/img/sertifikat/';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $extension = pathinfo($screenshot['name'], PATHINFO_EXTENSION);
+        $name_file =  "img-cert-" . $sertifikatName . "." . $extension;
+
+        if ($sertifikatId) {
+            if (empty($screenshot)) {
+                $result = $this->MSertifikat->getColumnValueById($sertifikatId, ['nama_file_sertifikat'], 'id_sertifikat');
+                $name_file = $result['nama_file_sertifikat'];
+            } else {
+                move_uploaded_file($screenshot['tmp_name'], __DIR__ . '/../../uploads/img/sertifikat/' . $name_file);
+            }
+            $_SESSION['sweet'] = [
+                'title' => 'Berhasil!',
+                'text' => 'Sertifikat Berhasil Diedit.',
+                'icon' => 'success'
+            ];
+            $this->updateSertifikat($sertifikatId, $sertifikatName, $name_file);
+        } else {
+            // Jika tidak, ini untuk tambah proyek baru
+            move_uploaded_file($_FILES['screenshot']['tmp_name'], __DIR__ . '/../../uploads/img/sertifikat/' . $name_file);
+            $_SESSION['sweet'] = [
+                'title' => 'Berhasil!',
+                'text' => 'Sertifikat Berhasil Ditambahkan.',
+                'icon' => 'success'
+            ];
+            $this->addSertifikat($sertifikatName, $name_file);
+        }
+
+
+        $this->redirect('/datasertifikat');
     }
+    private function updateSertifikat($id, $sertifikatName, $screenshot)
+    {
+        $data = [
+            'nama_sertifikat' => $sertifikatName,
+            'nama_file_sertifikat' => $screenshot,
+            'id_user' => $_SESSION['iduser']
+        ];
+        $this->MSertifikat->update($id, $data);
+    }
+
+    private function addSertifikat($sertifikatName, $screenshot)
+    {
+        $data = [
+            'nama_sertifikat' => $sertifikatName,
+            'nama_file_sertifikat' => $screenshot,
+            'id_user' => $_SESSION['iduser']
+        ];
+        $this->MSertifikat->create($data);
+    }
+    public function deleteSertifikat($projectId)
+    {
+        try {
+            $result = $this->MSertifikat->getColumnValueById($projectId, ['nama_file']);
+            $screenshot = $result['nama_file'];
+            $this->MSertifikat->delete($projectId);
+            if (!empty($screenshot)) {
+                $uploadPath = __DIR__ . '/../../uploads/';
+                $filePath = $uploadPath . $screenshot;
+                if (file_exists($filePath)) {
+                    unlink($filePath); // Hapus file dari folder
+                }
+            }
+
+            $_SESSION['sweet'] = [
+                'title' => 'Berhasil!',
+                'text' => 'Proyek Berhasil Dihapus.',
+                'icon' => 'success'
+            ];
+            header('Location: ' . BASE_URL . '/../dataportfolio');
+            exit();
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            $_SESSION['sweet'] = [
+                'title' => 'Gagal!',
+                'text' => 'Terjadi Kesalahan Saat Menghapus Proyek.',
+                'icon' => 'error'
+            ];
+            header('Location: ' . BASE_URL . '/../dataportfolio');
+            exit();
+        }
+    }
+    public function detailSertifikat($projectId)
+    {
+        try {
+            $project = $this->MProject->find($projectId);
+
+            if ($project) {
+                $title = 'Data Portfolio';
+                ob_start();
+                include 'views/admin/detailportfolio.php';
+                $content = ob_get_clean();
+                include_once __DIR__ . '/../../views/layout/admin/layout.php';
+            } else {
+                header('Location: /dataportfolio');
+                exit();
+            }
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    }
+    public function sd(Request $request){
+        $dsertifikat = $this->MSertifikat->all();
+        Response::json($dsertifikat,404);
+    }
+    
 }

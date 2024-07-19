@@ -14,7 +14,7 @@ class View
         extract($data);
         ob_start();
         require self::getViewPath($view);
-        
+        var_dump($view);
         self::$contentBuffer = ob_get_clean();
         if (self::$layout !== null) {
             ob_start();
@@ -28,6 +28,9 @@ class View
     }
     public static function csrfField()
     {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
         return '<input type="hidden" name="csrf_token" value="' . $_SESSION['csrf_token'] . '">';
     }
    

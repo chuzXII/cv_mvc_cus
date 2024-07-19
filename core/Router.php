@@ -7,15 +7,15 @@ class Router
     public static $routes = [];
     private static $groupMiddleware = [];
     private static $middlewareRegistry = [];
-
+    public  static $prefix = '';
     public static function get($uri, $controller)
     {
-        self::$routes[] = ['GET', $uri, $controller, self::$groupMiddleware];
+        self::$routes[] = ['GET', self::$prefix . $uri, $controller, self::$groupMiddleware];
     }
 
     public static function post($uri, $controller)
     {
-        self::$routes[] = ['POST', $uri, $controller, self::$groupMiddleware];
+        self::$routes[] = ['POST', self::$prefix . $uri, $controller, self::$groupMiddleware];
     }
 
     public static function middleware($key, $class = null)
@@ -26,12 +26,28 @@ class Router
         return new static;
     }
 
-    public static function group($middleware, $callback)
+    public static function group($options, $callback)
     {
+        // Simpan grup middleware dan prefiks saat ini
         $previousGroupMiddleware = self::$groupMiddleware;
-        self::$groupMiddleware = array_merge(self::$groupMiddleware, $middleware);
+        $previousPrefix = self::$prefix;
+
+        // Tambahkan middleware baru ke grup saat ini
+        if (isset($options['middleware'])) {
+            self::$groupMiddleware = array_merge(self::$groupMiddleware, $options['middleware']);
+        }
+
+        // Tambahkan prefiks baru ke grup saat ini
+        if (isset($options['prefix'])) {
+            self::$prefix .= '/' . trim($options['prefix'], '/');
+        }
+
+        // Panggil callback untuk mendefinisikan rute di dalam grup
         call_user_func($callback);
+
+        // Restore grup middleware dan prefiks sebelumnya setelah selesai dengan grup
         self::$groupMiddleware = $previousGroupMiddleware;
+        self::$prefix = $previousPrefix;
     }
 
     public static function dispatch()
@@ -41,9 +57,8 @@ class Router
         if (strpos($uri, $parts[0]) === 0) {
             $uri = substr($uri, strlen($parts[0]));
         }
-        // var_dump($_SERVER['REQUEST_URI'],$parts);
-        // // die();
         $method = $_SERVER['REQUEST_METHOD'];
+
         $middleware = new Middleware();
 
         foreach (self::$middlewareRegistry as $key => $class) {
@@ -51,12 +66,17 @@ class Router
         }
 
         $routeFound = false;
+        $methodNotAllowed = false;
         foreach (self::$routes as $route) {
             $routeUri = trim($route[1], '/');
             $routeUriPattern = preg_replace('/\{[^\/]+\}/', '([^/]+)', $routeUri);
             $routeUriPattern = "@^" . "/" . $routeUriPattern . "$@";
 
             if (preg_match($routeUriPattern, $uri, $matches)) {
+                if ($route[0] !== $method) {
+                    $methodNotAllowed = true;
+                    continue;
+                }
                 array_shift($matches);
                 $controllerData = $route;
                 $routeFound = true;
@@ -71,43 +91,24 @@ class Router
                     return;
                 }
             }
-            if ($route[0] === 'POST') {
-                // Verify CSRF token
-                if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            if ($route[0] === 'POST' && strpos($uri, '/api') !== 0) {
+                // Verify CSRF token for non-API routes
+                if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
                     http_response_code(403); // Forbidden
                     echo 'CSRF Token Verification Failed';
-                    return;
+                    die();
                 }
             }
 
-            list($controller, $method) = explode('@', $route[2]);
-            $controller = 'App\Controllers\\' . $controller;
+            if (is_array($route[2])) {
+                list($controller, $method) = $route[2];
+            } else {
+                list($controller, $method) = explode('@', $route[2]);
+                $controller = 'App\Controllers\\' . $controller;
+            }
 
             if (class_exists($controller)) {
-                // if ($route[0] === 'POST') {
-                //     if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
-                //         $url = "https://";
-                //     }
-                //     else{
-                //         $url = "http://";}
-                //     // Check if the request is from a form submission
-                //     if (!isset($_SERVER['HTTP_REFERER']) || parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) !== $_SERVER['REQUEST_URI']) {
-                //         http_response_code(405);
-                //         echo 'Method Not Allowed';
-                //         // $desiredUrl = getDesiredUrlForLoginForm();
-                //         $refererPath = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
-                //         $requestUriPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-                //         if (strpos($requestUriPath, $refererPath) !== 0) {
-                //             http_response_code(405);
-                //             echo 's';
-                //             return;
-                //         }
-                //         var_dump(strpos($requestUriPath, $refererPath));
-                //         return;
-                //     }
-                // }
                 $controllerInstance = new $controller();
-
 
                 if ($route[0] === 'POST') {
                     $request = new Request();
@@ -116,9 +117,17 @@ class Router
                     call_user_func_array([$controllerInstance, $method], $matches);
                 }
             }
+            return;
         }
 
-        http_response_code(404);
-        echo 'Page not found';
+        if ($methodNotAllowed) {
+            http_response_code(405);
+            echo '405 Method Not Allowed';
+            die();
+        } else {
+            http_response_code(404);
+            echo '404 Page Not Found';
+            die();
+        }
     }
 }

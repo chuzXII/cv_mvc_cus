@@ -28,7 +28,7 @@
         <h4 class="card-title mb-0"><?php echo isset($projectData['id_project']) ?  'Edit Project' : 'Add New Project'; ?></h4>
     </div>
     <div class="card-body p-4">
-        <form action="<?php echo BASE_URL; ?>/../exe/saveproject" method="POST" enctype="multipart/form-data">
+        <form action="<?php echo BASE_URL; ?>/exe/saveproject" method="POST" enctype="multipart/form-data">
         <?php echo \Core\View::csrfField(); ?>
 
             <?php if (isset($projectData['id_project'])) : ?>
@@ -105,7 +105,7 @@
                     <input class="form-control" type="file" accept="image/*" id="screenshot" name="screenshot">
 
                 </div>
-                <img id="imagePreview" class="preview" src='<?php echo !empty($projectData['nama_file']) ? '../uploads/' . htmlspecialchars($projectData['nama_file']) : ''; ?>'>
+                <img id="imagePreview" class="preview" src='<?php echo !empty($projectData['nama_file']) ?  '../image.php?filename=img/project/' . urlencode($projectData['nama_file']) : ''; ?>'>
                 <?php if (!empty($_SESSION['errors']['screenshot'])) : ?>
                     <div class="alert alert-danger mt-2" role="alert">
                         <?= htmlspecialchars($_SESSION['errors']['screenshot']) ?>
@@ -150,4 +150,14 @@
 
     
 </script>
+<?php if (isset($_SESSION['sweet'])) : ?>
+    <script>
+        Swal.fire({
+            title: "<?php echo $_SESSION['sweet']['title']; ?>",
+            text: "<?php echo $_SESSION['sweet']['text']; ?>",
+            icon: "<?php echo $_SESSION['sweet']['icon']; ?>"
+        });
+    </script>
+    <?php unset($_SESSION['sweet']); ?>
+<?php endif; ?>
 <?php \Core\View::stopSection(); ?>

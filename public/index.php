@@ -11,18 +11,22 @@ if (!defined('BASE_URL')) {
 
 use Dotenv\Dotenv;
 use Core\App;
+use Core\Router;
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\RedirectIfAuthenticated;
+
 require_once '../vendor/autoload.php';
-require_once '../core/App.php';
-require_once '../core/Controller.php';
-require_once '../core/Model.php';
-require_once '../core/Database.php';
-require_once '../core/View.php';
-require_once '../core/Router.php';
 
-
+Router::middleware('auth', AuthMiddleware::class);
+Router::middleware('redirectIfAuthenticated', RedirectIfAuthenticated::class);
 require_once __DIR__ . '/../config/load_env.php';
 loadEnv(__DIR__ . '/../.env');
+Router::$prefix = '/api';
+require_once '../routes/api.php';
+Router::$prefix = '';
 require_once '../routes/web.php';
+
+Router::dispatch();
 
 
 // Memulai aplikasi

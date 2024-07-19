@@ -73,4 +73,14 @@
         </form>
     </div>
 </div>
+<?php if (isset($_SESSION['sweet'])) : ?>
+    <script>
+        Swal.fire({
+            title: "<?php echo $_SESSION['sweet']['title']; ?>",
+            text: "<?php echo $_SESSION['sweet']['text']; ?>",
+            icon: "<?php echo $_SESSION['sweet']['icon']; ?>"
+        });
+    </script>
+    <?php unset($_SESSION['sweet']); ?>
+<?php endif; ?>
 <?php \Core\View::stopSection(); ?>

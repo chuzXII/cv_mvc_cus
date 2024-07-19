@@ -17,7 +17,7 @@
             </div>
             <div class="col-3">
                 <div class="text-center mb-n5">
-                    <img src="../assets/images/breadcrumb/ChatBc.png" alt="modernize-img" class="img-fluid mb-n4">
+                    <img src="assets/images/breadcrumb/ChatBc.png" alt="modernize-img" class="img-fluid mb-n4">
                 </div>
             </div>
         </div>
@@ -26,35 +26,28 @@
 <div class="card">
     <div class="card-body">
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <!-- <a href="/addportfolio" class="btn btn-primary btn-sm">Tambah Data</a> -->
-
+            <a href="addsertifikat" class="btn btn-primary btn-sm">Tambah Data</a>
         </div>
         <div class="table-responsive border rounded-4 p-2 mt-2">
             <table id="example" class="table table-dark text-nowrap table-bordered table-sm" style="width:100%">
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Nama Project</th>
-                        <th>Deksripsi Project</th>
-                        <th>Kategori Project</th>
-                        <th>Link Project</th>
-                        <th>Thumbnail</th>
+                        <th>Nama Sertifikat</th>
+                        <th>Img</th>
                         <th>Action</th>
 
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($users as $index => $user) : ?>
+                    <?php foreach ($dsertifikat as $index => $d) : ?>
                         <tr>
                             <td><?= $index + 1 ?></td>
-                            <td><?= $user['nama_project'] ?></td>
-                            <td><?= $user['deksripsi_project'] ?></td>
-                            <td><?= $user['kategori_project'] ?></td>
-                            <td><?= $user['link_project'] ?></td>
-                            <td><?= $user['nama_file'] ?></td>
-                            <td><a href='/detailportfolio/<?= $user['id_project'] ?>' class="btn btn-info btn-sm"><i class="ti ti-eye nav-small-cap-icon fs-4"></i></a>
-                                | <a href='/editportfolio/<?= $user['id_project'] ?>' class="btn btn-warning btn-sm"><i class="ti ti-edit nav-small-cap-icon fs-4"></i></a>
-                                | <a class="btn btn-danger btn-sm" onclick="return confirmDelete(<?= $user['id_project'] ?>)"><i class="ti ti-trash nav-small-cap-icon fs-4"></i></a></td>
+                            <td><?= $d['nama_sertifikat'] ?></td>
+                            <td><?= $d['nama_file_sertifikat'] ?></td>
+                            <td><a href='detailsertifikat/<?= $d['id_sertifikat'] ?>' class="btn btn-info btn-sm"><i class="ti ti-eye nav-small-cap-icon fs-4"></i></a>
+                                | <a href='editsertifikat/<?= $d['id_sertifikat'] ?>' class="btn btn-warning btn-sm"><i class="ti ti-edit nav-small-cap-icon fs-4"></i></a>
+                                | <a class="btn btn-danger btn-sm" onclick="return confirmDelete(<?= $user['id_sertifikat'] ?>)"><i class="ti ti-trash nav-small-cap-icon fs-4"></i></a></td>
 
 
                         </tr>

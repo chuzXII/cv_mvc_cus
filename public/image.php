@@ -4,13 +4,12 @@
 if (isset($_GET['filename'])) {
     $filename = $_GET['filename'];
     // Lokasi gambar di luar publik
-    $imagePath = '../uploads/' . $filename;
-   
+    $imagePath = '../storage/' . $filename;
     // Mengecek apakah file gambar ada
     if (file_exists($imagePath)) {
         // Mendapatkan tipe mime dari gambar
         $mimeType = mime_content_type($imagePath);
-    
+
         // Mengatur header sesuai tipe mime
         header("Content-Type: $mimeType");
 

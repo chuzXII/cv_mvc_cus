@@ -4,8 +4,8 @@ namespace Core;
 
 class App
 {
-    protected $controller = 'HomeController';
-    protected $method = 'index';
+    protected $controller = '';
+    protected $method = '';
     protected $params = [];
 
     public function __construct()
@@ -23,7 +23,7 @@ class App
         if (class_exists($this->controller)) {
             $this->controller = new $this->controller;
         } else {
-            die("Class $this->controller not found");
+            exit;
         }
 
         if (isset($url[1]) && method_exists($this->controller, $url[1])) {

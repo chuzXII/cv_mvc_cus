@@ -19,5 +19,9 @@ class Controller
         header('Location: '.BASE_URL.$route);
         exit;
     }
+    public function withErrors($errors)
+    {
+        $_SESSION['errors'] = $errors;
+    }
     
 }

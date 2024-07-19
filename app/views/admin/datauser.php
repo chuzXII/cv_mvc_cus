@@ -5,19 +5,19 @@
     <div class="card-body px-4 py-3">
         <div class="row align-items-center">
             <div class="col-9">
-                <h4 class="fw-semibold mb-8">Data User</h4>
+                <h4 class="fw-semibold mb-8">Datatable Basic</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a class="text-muted text-decoration-none" href="/dashboard">Home</a>
+                            <a class="text-muted text-decoration-none" href="../dark/index.html">Home</a>
                         </li>
-                        <li class="breadcrumb-item" aria-current="page">Data User</li>
+                        <li class="breadcrumb-item" aria-current="page">Datatable Basic</li>
                     </ol>
                 </nav>
             </div>
             <div class="col-3">
                 <div class="text-center mb-n5">
-                    <img src="../assets/images/breadcrumb/ChatBc.png" alt="modernize-img" class="img-fluid mb-n4">
+                    <img src="assets/images/breadcrumb/ChatBc.png" alt="modernize-img" class="img-fluid mb-n4">
                 </div>
             </div>
         </div>
