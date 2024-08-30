@@ -8,17 +8,21 @@ class Request
 
     public function __construct()
     {
-        $this->data = $_REQUEST; // Menggunakan $_REQUEST untuk mendapatkan data dari POST atau GET
+        // Menggabungkan data dari $_REQUEST dan JSON input
+        $this->data = $_REQUEST;
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $this->data = array_merge($this->data, $input);
+        }
     }
 
     public function input($key = null)
     {
-        // if ($key === null) {
-        //     return $this->data;
-        // }
         $default = null;
         return $this->data[$key] ?? $default;
     }
+
     public function file($key = null)
     {
         if ($key === null) {
@@ -26,7 +30,6 @@ class Request
         }
         return $_FILES[$key] ?? null;
     }
-
 
     public function all()
     {

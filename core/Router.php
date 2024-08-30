@@ -104,9 +104,12 @@ class Router
                 list($controller, $method) = $route[2];
             } else {
                 list($controller, $method) = explode('@', $route[2]);
-                $controller = 'App\Controllers\\' . $controller;
+                $controller = strpos($uri, '/api') === 0
+                    ? 'App\Controllers\Api\\' . $controller
+                    : 'App\Controllers\\' . $controller;
             }
-
+          
+            
             if (class_exists($controller)) {
                 $controllerInstance = new $controller();
 

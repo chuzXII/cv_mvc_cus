@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Models\Project;
 use App\Models\Sertifikat;
+use App\Models\User;
 use Core\Controller;
 // use Core\View;
 use Core\Database;
@@ -25,6 +26,8 @@ class AdminController extends Controller
     {
         $this->MProject = new Project();
         $this->MSertifikat = new Sertifikat();
+        $this->MUser = new User();
+        
     }
     public function index()
     {
@@ -521,9 +524,9 @@ class AdminController extends Controller
             echo "Error: " . $e->getMessage();
         }
     }
-    public function sd(Request $request){
-        $dsertifikat = $this->MSertifikat->all();
-        Response::json($dsertifikat,404);
+    public function sd(){
+        $dsertifikat = $this->MUser->all();
+        Response::json($dsertifikat);
     }
     
 }

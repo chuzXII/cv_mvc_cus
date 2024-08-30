@@ -44,23 +44,19 @@ class Validator
         if ($rule === 'required' && empty($this->data[$field])) {
             $this->addError($field, 'required');
         }
-
-        if ($rule === 'file' && isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
-            $this->addError($field, 'file');
-        }
-
-        if (strpos($rule, 'mimes:') === 0 && isset($_FILES[$field])) {
-     
-            if (!empty($_FILES[$field]['tmp_name'])) {
-                $mime = mime_content_type($_FILES[$field]['tmp_name']);
-                $allowedTypes = explode(',', str_replace('mimes:', '', $rule));
-                $fileType = mime_content_type($_FILES[$field]['tmp_name']);
-
-                if (!in_array($fileType, $allowedTypes)) {
+    
+        if (strpos($rule, 'mimes:') === 0) {
+            $params = explode(':', $rule);
+            $allowedMimes = explode(',', $params[1]);
+    
+            if (isset($this->data[$field]) && is_uploaded_file($this->data[$field]['tmp_name'])) {
+                $fileMime = mime_content_type($this->data[$field]['tmp_name']);
+    
+                if (!in_array($fileMime, $allowedMimes)) {
                     $this->addError($field, 'mimes');
                 }
             } else {
-                // $this->addError($field, 'file');
+                $this->addError($field, 'required');
             }
         }
 
